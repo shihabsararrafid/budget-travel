@@ -1,0 +1,921 @@
+"use client";
+
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  MapPin,
+  Clock,
+  DollarSign,
+  Star,
+  Calendar,
+  Route,
+  Camera,
+  UtensilsCrossed,
+  Building,
+  Car,
+  Info,
+} from "lucide-react";
+
+interface Destination {
+  id: number;
+  name: string;
+  country: string;
+  image: string;
+  totalBudget: string;
+  duration: string;
+  rating: number;
+  highlights: string[];
+  breakdown: {
+    flights: string;
+    accommodation: string;
+    food: string;
+    activities: string;
+  };
+  description: string;
+  tags: string[];
+}
+
+interface RouteOption {
+  id: string;
+  name: string;
+  type: "relaxed" | "moderate" | "intensive";
+  duration: string;
+  difficulty: "Easy" | "Moderate" | "Challenging";
+  highlights: string[];
+  totalCost: string;
+  timeline: DayActivity[];
+}
+
+interface DayActivity {
+  day: number;
+  title: string;
+  description: string;
+  activities: Activity[];
+  totalCost: string;
+  transportation: string;
+  accommodation: string;
+}
+
+interface Activity {
+  time: string;
+  name: string;
+  type: "sightseeing" | "food" | "transport" | "accommodation" | "activity";
+  cost: string;
+  duration: string;
+  description: string;
+  tips?: string;
+}
+
+interface DestinationDetailsProps {
+  destination: Destination | null;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+// Create comprehensive route data for all destinations
+const getAllRoutes = (destinationId: number): RouteOption[] => {
+  switch (destinationId) {
+    case 1: // Bangkok
+      return bangkokRoutes;
+    case 2: // Prague
+      return pragueRoutes;
+    case 3: // Lisbon
+      return lisbonRoutes;
+    case 4: // Mexico City
+      return mexicoCityRoutes;
+    default:
+      return bangkokRoutes;
+  }
+};
+
+const bangkokRoutes: RouteOption[] = [
+  {
+    id: "cultural-explorer",
+    name: "Cultural Explorer",
+    type: "relaxed",
+    duration: "7 days",
+    difficulty: "Easy",
+    highlights: [
+      "Grand Palace",
+      "Floating Markets",
+      "Temple Tours",
+      "Street Food",
+    ],
+    totalCost: "$850-1100",
+    timeline: [
+      {
+        day: 1,
+        title: "Arrival & Grand Palace District",
+        description: "Explore the heart of royal Bangkok",
+        totalCost: "$45-60",
+        transportation: "Airport Rail Link + BTS",
+        accommodation: "Khao San Road Area",
+        activities: [
+          {
+            time: "09:00",
+            name: "Airport to Hotel",
+            type: "transport",
+            cost: "$8",
+            duration: "45 min",
+            description:
+              "Take Airport Rail Link to Phaya Thai, then BTS to National Stadium",
+          },
+          {
+            time: "11:00",
+            name: "Check-in & Rest",
+            type: "accommodation",
+            cost: "$25",
+            duration: "2 hours",
+            description: "Budget guesthouse in Khao San area",
+          },
+          {
+            time: "14:00",
+            name: "Grand Palace Complex",
+            type: "sightseeing",
+            cost: "$15",
+            duration: "3 hours",
+            description:
+              "Explore the magnificent royal complex and Wat Phra Kaew",
+            tips: "Dress modestly - cover shoulders and knees",
+          },
+          {
+            time: "18:00",
+            name: "Street Food Dinner",
+            type: "food",
+            cost: "$5-8",
+            duration: "1 hour",
+            description: "Try pad thai, mango sticky rice at Khao San Road",
+          },
+        ],
+      },
+      {
+        day: 2,
+        title: "Floating Markets & River Adventure",
+        description: "Experience traditional Thai markets on water",
+        totalCost: "$35-50",
+        transportation: "Songthaew + Boat",
+        accommodation: "Same hotel",
+        activities: [
+          {
+            time: "06:00",
+            name: "Damnoen Saduak Floating Market",
+            type: "activity",
+            cost: "$25",
+            duration: "4 hours",
+            description:
+              "Traditional floating market experience with boat ride",
+            tips: "Go early to avoid crowds and heat",
+          },
+          {
+            time: "11:00",
+            name: "Local Boat Noodles",
+            type: "food",
+            cost: "$3",
+            duration: "30 min",
+            description: "Authentic boat noodles near the market",
+          },
+          {
+            time: "14:00",
+            name: "Maeklong Railway Market",
+            type: "sightseeing",
+            cost: "$0",
+            duration: "1 hour",
+            description:
+              "Famous train market - see vendors move for passing trains",
+          },
+          {
+            time: "16:00",
+            name: "Return to Bangkok",
+            type: "transport",
+            cost: "$7",
+            duration: "2 hours",
+            description: "Minivan back to city center",
+          },
+          {
+            time: "19:00",
+            name: "Chinatown Food Tour",
+            type: "food",
+            cost: "$8-12",
+            duration: "2 hours",
+            description: "Explore Yaowarat Road food scene",
+          },
+        ],
+      },
+      {
+        day: 3,
+        title: "Temple Hopping & Cultural Sites",
+        description: "Discover Bangkok's spiritual side",
+        totalCost: "$25-35",
+        transportation: "BTS + Walking",
+        accommodation: "Same hotel",
+        activities: [
+          {
+            time: "08:00",
+            name: "Wat Pho Temple",
+            type: "sightseeing",
+            cost: "$3",
+            duration: "2 hours",
+            description:
+              "Famous reclining Buddha and traditional massage school",
+          },
+          {
+            time: "11:00",
+            name: "Wat Arun (Temple of Dawn)",
+            type: "sightseeing",
+            cost: "$2",
+            duration: "1.5 hours",
+            description: "Climb the iconic riverside temple for city views",
+          },
+          {
+            time: "13:00",
+            name: "Riverside Lunch",
+            type: "food",
+            cost: "$8",
+            duration: "1 hour",
+            description: "Thai cuisine with Chao Phraya River views",
+          },
+          {
+            time: "15:00",
+            name: "Jim Thompson House",
+            type: "sightseeing",
+            cost: "$5",
+            duration: "1.5 hours",
+            description: "Traditional Thai architecture and silk museum",
+          },
+          {
+            time: "17:30",
+            name: "Lumpini Park",
+            type: "activity",
+            cost: "$0",
+            duration: "1 hour",
+            description:
+              "Relax in Bangkok's green heart, watch monitor lizards",
+          },
+          {
+            time: "19:00",
+            name: "Food Court Dinner",
+            type: "food",
+            cost: "$5-8",
+            duration: "1 hour",
+            description:
+              "Try various Thai dishes at MBK or Terminal 21 food court",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: "foodie-adventure",
+    name: "Foodie Adventure",
+    type: "moderate",
+    duration: "7 days",
+    difficulty: "Moderate",
+    highlights: [
+      "Cooking Classes",
+      "Night Markets",
+      "Hidden Local Spots",
+      "Food Tours",
+    ],
+    totalCost: "$900-1200",
+    timeline: [
+      {
+        day: 1,
+        title: "Arrival & Street Food Introduction",
+        description: "Dive into Bangkok's incredible food scene",
+        totalCost: "$40-55",
+        transportation: "Airport Rail Link + Taxi",
+        accommodation: "Silom Area Hotel",
+        activities: [
+          {
+            time: "10:00",
+            name: "Airport to Hotel",
+            type: "transport",
+            cost: "$10",
+            duration: "1 hour",
+            description: "Airport Rail Link + taxi to Silom area",
+          },
+          {
+            time: "12:00",
+            name: "Hotel Check-in",
+            type: "accommodation",
+            cost: "$30",
+            duration: "30 min",
+            description: "Mid-range hotel in Silom district",
+          },
+          {
+            time: "14:00",
+            name: "Street Food Walking Tour",
+            type: "food",
+            cost: "$15",
+            duration: "3 hours",
+            description: "Guided tour through Silom and Sathorn food scene",
+          },
+          {
+            time: "18:00",
+            name: "Patpong Night Market",
+            type: "activity",
+            cost: "$5-10",
+            duration: "2 hours",
+            description: "Browse night market and try grilled seafood",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: "budget-backpacker",
+    name: "Budget Backpacker",
+    type: "intensive",
+    duration: "7 days",
+    difficulty: "Easy",
+    highlights: [
+      "Hostels",
+      "Local Transport",
+      "Free Activities",
+      "Budget Eats",
+    ],
+    totalCost: "$600-800",
+    timeline: [
+      {
+        day: 1,
+        title: "Arrival & Khao San Road",
+        description: "Budget accommodation and backpacker scene",
+        totalCost: "$25-35",
+        transportation: "Airport Bus + Walk",
+        accommodation: "Khao San Road Hostel",
+        activities: [
+          {
+            time: "09:00",
+            name: "Airport Bus to Khao San",
+            type: "transport",
+            cost: "$1",
+            duration: "1 hour",
+            description: "Public bus A1 or A2 to Khao San Road",
+          },
+          {
+            time: "11:00",
+            name: "Hostel Check-in",
+            type: "accommodation",
+            cost: "$8",
+            duration: "30 min",
+            description: "Dorm bed in Khao San Road hostel",
+          },
+          {
+            time: "12:00",
+            name: "Free Walking Tour",
+            type: "activity",
+            cost: "$0",
+            duration: "3 hours",
+            description: "Join free walking tour of old Bangkok (tip-based)",
+          },
+          {
+            time: "16:00",
+            name: "7-Eleven Snacks",
+            type: "food",
+            cost: "$3",
+            duration: "15 min",
+            description: "Budget meal from convenience store",
+          },
+          {
+            time: "18:00",
+            name: "Sunset at Wat Saket",
+            type: "sightseeing",
+            cost: "$1",
+            duration: "2 hours",
+            description: "Climb Golden Mount for sunset views",
+          },
+          {
+            time: "20:00",
+            name: "Street Food Dinner",
+            type: "food",
+            cost: "$3-5",
+            duration: "1 hour",
+            description: "Pad thai and fresh fruit from street vendors",
+          },
+        ],
+      },
+    ],
+  },
+];
+
+const pragueRoutes: RouteOption[] = [
+  {
+    id: "historic-explorer",
+    name: "Historic Explorer",
+    type: "relaxed",
+    duration: "6 days",
+    difficulty: "Easy",
+    highlights: [
+      "Prague Castle",
+      "Old Town Square",
+      "Charles Bridge",
+      "Beer Gardens",
+    ],
+    totalCost: "$900-1200",
+    timeline: [
+      {
+        day: 1,
+        title: "Arrival & Old Town",
+        description: "Explore the historic heart of Prague",
+        totalCost: "$50-70",
+        transportation: "Airport Express + Tram",
+        accommodation: "Old Town Guesthouse",
+        activities: [
+          {
+            time: "10:00",
+            name: "Airport to Old Town",
+            type: "transport",
+            cost: "$12",
+            duration: "45 min",
+            description: "Airport Express bus + Metro to city center",
+          },
+          {
+            time: "12:00",
+            name: "Hotel Check-in",
+            type: "accommodation",
+            cost: "$35",
+            duration: "30 min",
+            description: "Budget hotel near Wenceslas Square",
+          },
+          {
+            time: "14:00",
+            name: "Old Town Square",
+            type: "sightseeing",
+            cost: "$0",
+            duration: "2 hours",
+            description: "Astronomical Clock and Gothic churches",
+            tips: "Visit at the top of the hour to see the clock animation",
+          },
+          {
+            time: "17:00",
+            name: "Traditional Czech Dinner",
+            type: "food",
+            cost: "$15-20",
+            duration: "2 hours",
+            description: "Goulash and Czech beer in a traditional pub",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: "beer-culture",
+    name: "Beer & Culture",
+    type: "moderate",
+    duration: "6 days",
+    difficulty: "Easy",
+    highlights: [
+      "Brewery Tours",
+      "Beer Gardens",
+      "Local Pubs",
+      "Cultural Sites",
+    ],
+    totalCost: "$800-1100",
+    timeline: [
+      {
+        day: 1,
+        title: "Arrival & Beer Introduction",
+        description: "Start your Prague beer adventure",
+        totalCost: "$45-65",
+        transportation: "Public Transport",
+        accommodation: "Hostel Near City Center",
+        activities: [
+          {
+            time: "11:00",
+            name: "Arrival & Check-in",
+            type: "accommodation",
+            cost: "$25",
+            duration: "1 hour",
+            description: "Modern hostel with social areas",
+          },
+          {
+            time: "15:00",
+            name: "Brewery Tour",
+            type: "activity",
+            cost: "$20",
+            duration: "2 hours",
+            description: "Learn about Czech beer making traditions",
+          },
+        ],
+      },
+    ],
+  },
+];
+
+const lisbonRoutes: RouteOption[] = [
+  {
+    id: "coastal-explorer",
+    name: "Coastal Explorer",
+    type: "relaxed",
+    duration: "8 days",
+    difficulty: "Easy",
+    highlights: ["Beaches", "Coastal Towns", "Seafood", "Sunset Views"],
+    totalCost: "$1000-1400",
+    timeline: [
+      {
+        day: 1,
+        title: "Arrival & Alfama District",
+        description: "Explore Lisbon's oldest neighborhood",
+        totalCost: "$60-80",
+        transportation: "Metro + Tram",
+        accommodation: "Alfama Guesthouse",
+        activities: [
+          {
+            time: "09:00",
+            name: "Airport to City",
+            type: "transport",
+            cost: "$15",
+            duration: "45 min",
+            description: "Metro Red Line to city center",
+          },
+          {
+            time: "11:00",
+            name: "Guesthouse Check-in",
+            type: "accommodation",
+            cost: "$40",
+            duration: "30 min",
+            description: "Traditional Portuguese guesthouse",
+          },
+          {
+            time: "14:00",
+            name: "Alfama Walking Tour",
+            type: "sightseeing",
+            cost: "$0",
+            duration: "3 hours",
+            description: "Narrow streets, viewpoints, and Fado music",
+            tips: "Wear comfortable shoes for the steep cobblestone streets",
+          },
+          {
+            time: "18:00",
+            name: "Pastéis de Nata Tasting",
+            type: "food",
+            cost: "$8-12",
+            duration: "1 hour",
+            description: "Try the famous Portuguese custard tarts",
+          },
+        ],
+      },
+    ],
+  },
+];
+
+const mexicoCityRoutes: RouteOption[] = [
+  {
+    id: "cultural-foodie",
+    name: "Cultural Foodie",
+    type: "moderate",
+    duration: "7 days",
+    difficulty: "Easy",
+    highlights: ["Street Tacos", "Museums", "Markets", "Historic Sites"],
+    totalCost: "$650-900",
+    timeline: [
+      {
+        day: 1,
+        title: "Arrival & Historic Center",
+        description: "Discover Mexico City's rich history and amazing food",
+        totalCost: "$40-55",
+        transportation: "Metro + Walking",
+        accommodation: "Centro Historico Hotel",
+        activities: [
+          {
+            time: "08:00",
+            name: "Airport to Centro",
+            type: "transport",
+            cost: "$5",
+            duration: "1 hour",
+            description: "Metro from airport to historic center",
+          },
+          {
+            time: "10:00",
+            name: "Hotel Check-in",
+            type: "accommodation",
+            cost: "$25",
+            duration: "30 min",
+            description: "Budget hotel near Zocalo main square",
+          },
+          {
+            time: "12:00",
+            name: "Zocalo & Cathedral",
+            type: "sightseeing",
+            cost: "$0",
+            duration: "2 hours",
+            description: "Main square and Metropolitan Cathedral",
+          },
+          {
+            time: "15:00",
+            name: "Street Taco Tour",
+            type: "food",
+            cost: "$8-12",
+            duration: "2 hours",
+            description: "Try authentic tacos al pastor and carnitas",
+            tips: "Look for busy stalls with locals - that's where the best tacos are!",
+          },
+        ],
+      },
+    ],
+  },
+];
+
+export function DestinationDetails({
+  destination,
+  isOpen,
+  onClose,
+}: DestinationDetailsProps) {
+  const [selectedRoute, setSelectedRoute] = useState<string>("");
+  const [selectedDay, setSelectedDay] = useState<number>(1);
+
+  if (!destination) return null;
+
+  // Get routes dynamically based on destination
+  const routes = getAllRoutes(destination.id);
+
+  // Set default route if none selected
+  const defaultRoute = selectedRoute || routes[0]?.id || "";
+  const currentRoute = routes.find((r) => r.id === defaultRoute) || routes[0];
+
+  // Update selected route if it's empty
+  if (!selectedRoute && routes.length > 0) {
+    setSelectedRoute(routes[0].id);
+  }
+  const currentDay =
+    currentRoute.timeline.find((d) => d.day === selectedDay) ||
+    currentRoute.timeline[0];
+
+  const getActivityIcon = (type: Activity["type"]) => {
+    switch (type) {
+      case "sightseeing":
+        return <Camera className="h-4 w-4" />;
+      case "food":
+        return <UtensilsCrossed className="h-4 w-4" />;
+      case "transport":
+        return <Car className="h-4 w-4" />;
+      case "accommodation":
+        return <Building className="h-4 w-4" />;
+      case "activity":
+        return <Star className="h-4 w-4" />;
+      default:
+        return <MapPin className="h-4 w-4" />;
+    }
+  };
+
+  const getActivityColor = (type: Activity["type"]) => {
+    switch (type) {
+      case "sightseeing":
+        return "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300";
+      case "food":
+        return "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300";
+      case "transport":
+        return "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300";
+      case "accommodation":
+        return "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300";
+      case "activity":
+        return "bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300";
+      default:
+        return "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300";
+    }
+  };
+
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case "Easy":
+        return "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300";
+      case "Moderate":
+        return "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300";
+      case "Challenging":
+        return "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300";
+      default:
+        return "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300";
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="min-w-fit max-h-[95vh] overflow-hidden p-0">
+        <DialogHeader className="p-6 pb-0">
+          <div className="flex items-start justify-between">
+            <div>
+              <DialogTitle className="text-2xl font-bold flex items-center gap-3">
+                <span className="text-3xl">{destination.image}</span>
+                {destination.name}
+              </DialogTitle>
+              <div className="flex items-center gap-4 mt-2 text-gray-600 dark:text-gray-400">
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-4 w-4" />
+                  {destination.country}
+                </div>
+                <div className="flex items-center gap-1">
+                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  {destination.rating}
+                </div>
+                <div className="flex items-center gap-1">
+                  <Clock className="h-4 w-4" />
+                  {destination.duration}
+                </div>
+                <div className="flex items-center gap-1">
+                  <DollarSign className="h-4 w-4" />
+                  {destination.totalBudget}
+                </div>
+              </div>
+            </div>
+          </div>
+        </DialogHeader>
+
+        <div className="flex h-[calc(95vh-120px)]">
+          {/* Left Sidebar - Route Selection */}
+          <div className="w-96 border-r border-gray-200 dark:border-gray-700 p-6 overflow-y-auto">
+            <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+              <Route className="h-5 w-5" />
+              Choose Your Route
+            </h3>
+
+            <div className="space-y-3">
+              {routes.map((route) => (
+                <button
+                  key={route.id}
+                  onClick={() => {
+                    setSelectedRoute(route.id);
+                    setSelectedDay(1);
+                  }}
+                  className={`w-full p-4 rounded-lg border text-left transition-all ${
+                    selectedRoute === route.id
+                      ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                      : "border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500"
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <h4 className="font-semibold text-sm">{route.name}</h4>
+                    <Badge className={getDifficultyColor(route.difficulty)}>
+                      {route.difficulty}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                    {route.duration} • {route.totalCost}
+                  </p>
+                  <div className="flex flex-wrap gap-1">
+                    {route.highlights.slice(0, 2).map((highlight, index) => (
+                      <Badge key={index} variant="outline" className="text-xs">
+                        {highlight}
+                      </Badge>
+                    ))}
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {/* Day Selection */}
+            <div className="mt-6">
+              <h4 className="font-semibold mb-3 flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Day Timeline
+              </h4>
+              <div className="space-y-2">
+                {currentRoute.timeline.map((day) => (
+                  <button
+                    key={day.day}
+                    onClick={() => setSelectedDay(day.day)}
+                    className={`w-full p-3 rounded-lg border text-left transition-all ${
+                      selectedDay === day.day
+                        ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                        : "border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ${
+                          selectedDay === day.day
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
+                        }`}
+                      >
+                        {day.day}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h5 className="font-medium text-sm truncate">
+                          {day.title}
+                        </h5>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {day.totalCost}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Main Content - Day Details */}
+          <div className="flex-1 p-6 overflow-y-auto">
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold">
+                  Day {currentDay.day}: {currentDay.title}
+                </h2>
+                <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                  <span>💰 {currentDay.totalCost}</span>
+                  <span>🚗 {currentDay.transportation}</span>
+                  <span>🏨 {currentDay.accommodation}</span>
+                </div>
+              </div>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                {currentDay.description}
+              </p>
+            </div>
+
+            {/* Timeline */}
+            <div className="relative">
+              {/* Timeline Line */}
+              <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-500 to-purple-500"></div>
+
+              <div className="space-y-6">
+                {currentDay.activities.map((activity, index) => (
+                  <div key={index} className="relative flex items-start gap-4">
+                    {/* Timeline Dot */}
+                    <div
+                      className={`relative z-10 w-12 h-12 rounded-full border-4 border-white dark:border-slate-800 flex items-center justify-center ${getActivityColor(
+                        activity.type
+                      )}`}
+                    >
+                      {getActivityIcon(activity.type)}
+                    </div>
+
+                    {/* Activity Card */}
+                    <Card className="flex-1 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border-white/20 shadow-md">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <h4 className="font-semibold text-gray-800 dark:text-gray-200">
+                              {activity.name}
+                            </h4>
+                            <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mt-1">
+                              <span>🕐 {activity.time}</span>
+                              <span>⏱️ {activity.duration}</span>
+                              <span>💵 {activity.cost}</span>
+                            </div>
+                          </div>
+                          <Badge
+                            variant="outline"
+                            className="text-xs capitalize"
+                          >
+                            {activity.type}
+                          </Badge>
+                        </div>
+
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                          {activity.description}
+                        </p>
+
+                        {activity.tips && (
+                          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+                            <div className="flex items-start gap-2">
+                              <Info className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                              <p className="text-sm text-amber-800 dark:text-amber-200">
+                                <strong>Tip:</strong> {activity.tips}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Day Navigation */}
+            <div className="flex justify-between mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <Button
+                variant="outline"
+                onClick={() => setSelectedDay(Math.max(1, selectedDay - 1))}
+                disabled={selectedDay === 1}
+                className="flex items-center gap-2"
+              >
+                ← Previous Day
+              </Button>
+
+              <Button
+                onClick={() =>
+                  setSelectedDay(
+                    Math.min(currentRoute.timeline.length, selectedDay + 1)
+                  )
+                }
+                disabled={selectedDay === currentRoute.timeline.length}
+                className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              >
+                Next Day →
+              </Button>
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}

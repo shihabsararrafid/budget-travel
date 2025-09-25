@@ -1,0 +1,11 @@
+FROM golang:1.20-alpine AS build
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -o /tour-app
+
+FROM alpine:3.18
+COPY --from=build /tour-app /tour-app
+EXPOSE 8080
+ENTRYPOINT ["/tour-app"]

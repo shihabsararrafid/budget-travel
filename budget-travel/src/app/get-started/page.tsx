@@ -2,10 +2,13 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Navigation } from "@/components/navigation"
+import { apiService } from "@/lib/api"
 import { 
   MapPin, 
   ArrowLeft, 
@@ -19,11 +22,17 @@ import {
   UtensilsCrossed,
   Camera,
   Sparkles,
-  Globe
+  Globe,
+  Eye,
+  EyeOff,
+  Lock
 } from "lucide-react"
 
 export default function GetStartedPage() {
+  const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
+  const [showPassword, setShowPassword] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
     travelStyle: "",
     budgetRange: "",
@@ -31,7 +40,8 @@ export default function GetStartedPage() {
     travelFrequency: "",
     interests: [] as string[],
     name: "",
-    email: ""
+    email: "",
+    password: ""
   })
 
   const totalSteps = 4
@@ -82,9 +92,18 @@ export default function GetStartedPage() {
     }
   }
 
-  const handleFinish = () => {
-    console.log("Onboarding completed:", formData)
-    // Redirect to dashboard or main app
+  const handleFinish = async () => {
+    setIsLoading(true)
+    try {
+      const response = await apiService.register(formData.email, formData.password)
+      console.log("Registration successful:", response)
+      router.push("/cost-sheets")
+    } catch (error) {
+      console.error("Registration failed:", error)
+      alert("Registration failed. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const updateFormData = (field: string, value: string | number | string[]) => {
@@ -286,6 +305,29 @@ export default function GetStartedPage() {
                 />
               </div>
 
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Create a secure password"
+                    value={formData.password}
+                    onChange={(e) => updateFormData("password", e.target.value)}
+                    className="pl-10 pr-10 bg-white/90 dark:bg-slate-700/90"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+
               <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-700">
                 <div className="flex items-center gap-3 mb-3">
                   <Sparkles className="h-5 w-5 text-blue-600" />
@@ -330,7 +372,9 @@ export default function GetStartedPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <Navigation />
+      <div className="pt-16 min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
         {/* Back to Home */}
         <div className="mb-6">
@@ -400,10 +444,19 @@ export default function GetStartedPage() {
                 <Button
                   onClick={handleFinish}
                   className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
-                  disabled={!formData.name || !formData.email}
+                  disabled={!formData.name || !formData.email || !formData.password || isLoading}
                 >
-                  <Globe className="h-4 w-4" />
-                  Start Exploring
+                  {isLoading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      Creating Account...
+                    </>
+                  ) : (
+                    <>
+                      <Globe className="h-4 w-4" />
+                      Start Exploring
+                    </>
+                  )}
                 </Button>
               )}
             </div>
@@ -431,6 +484,7 @@ export default function GetStartedPage() {
             </Link>
           </p>
         </div>
+      </div>
       </div>
     </div>
   )

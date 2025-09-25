@@ -2,13 +2,17 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Navigation } from "@/components/navigation"
+import { apiService } from "@/lib/api"
 import { MapPin, Mail, Lock, Eye, EyeOff, ArrowLeft, Github, Chrome } from "lucide-react"
 
 export default function SignInPage() {
+  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -18,11 +22,16 @@ export default function SignInPage() {
     e.preventDefault()
     setIsLoading(true)
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const response = await apiService.login(email, password)
+      console.log("Login successful:", response)
+      router.push("/cost-sheets")
+    } catch (error) {
+      console.error("Login failed:", error)
+      alert("Login failed. Please check your credentials.")
+    } finally {
       setIsLoading(false)
-      console.log("Sign in:", { email, password })
-    }, 1500)
+    }
   }
 
   const handleSocialSignIn = (provider: string) => {
@@ -30,7 +39,9 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <Navigation />
+      <div className="pt-16 min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Back to Home */}
         <div className="mb-6">
@@ -164,7 +175,7 @@ export default function SignInPage() {
 
             <div className="text-center text-sm text-gray-600 dark:text-gray-400">
               Don&apos;t have an account?{" "}
-              <Link href="/signup" className="text-blue-600 hover:text-blue-700 font-medium">
+              <Link href="/get-started" className="text-blue-600 hover:text-blue-700 font-medium">
                 Sign up for free
               </Link>
             </div>
@@ -191,6 +202,7 @@ export default function SignInPage() {
             Privacy Policy
           </Link>
         </div>
+      </div>
       </div>
     </div>
   )

@@ -94,15 +94,17 @@ export function ImageTranslator() {
       }
 
       // Find the recommendations item
-      const recommendationsItem = data.find(item => item.recommendations);
-      
+      const recommendationsItem = data.find((item) => item.recommendations);
+
       // Check for errors in any of the response items
-      const errorItem = data.find(item => item.result?._error);
+      const errorItem = data.find((item) => item.result?._error);
       if (errorItem) {
         console.warn("API returned an error:", errorItem.result?._error);
         // Continue processing if we have recommendations, otherwise throw error
         if (!recommendationsItem) {
-          throw new Error(`API Error: ${errorItem.result?._error || "Unknown error"}`);
+          throw new Error(
+            `API Error: ${errorItem.result?._error || "Unknown error"}`
+          );
         }
       }
 
@@ -111,7 +113,9 @@ export function ImageTranslator() {
       }
 
       // Set location info (if available in any item)
-      const locationItem = data.find(item => item.result?.Output?.location_info);
+      const locationItem = data.find(
+        (item) => item.result?.Output?.location_info
+      );
       if (locationItem?.result?.Output?.location_info) {
         setLocationInfo(locationItem.result.Output.location_info);
       } else {
@@ -120,24 +124,38 @@ export function ImageTranslator() {
 
       try {
         // Log the raw recommendations string for debugging
-        console.log("Raw recommendations string:", recommendationsItem.recommendations);
-        
+        console.log(
+          "Raw recommendations string:",
+          recommendationsItem.recommendations
+        );
+
         // Clean the string by removing any potential control characters or fixing common issues
         let cleanedRecommendations = recommendationsItem.recommendations.trim();
-        
+
         // Check if the string is properly formatted JSON
-        if (!cleanedRecommendations.startsWith('[') && !cleanedRecommendations.startsWith('{')) {
+        if (
+          !cleanedRecommendations.startsWith("[") &&
+          !cleanedRecommendations.startsWith("{")
+        ) {
           // If it doesn't start with [ or {, it might be wrapped in quotes
-          if (cleanedRecommendations.startsWith('"') && cleanedRecommendations.endsWith('"')) {
+          if (
+            cleanedRecommendations.startsWith('"') &&
+            cleanedRecommendations.endsWith('"')
+          ) {
             cleanedRecommendations = cleanedRecommendations.slice(1, -1);
             // Unescape any escaped quotes
-            cleanedRecommendations = cleanedRecommendations.replace(/\\"/g, '"');
+            cleanedRecommendations = cleanedRecommendations.replace(
+              /\\"/g,
+              '"'
+            );
           }
         }
-        
+
         console.log("Cleaned recommendations string:", cleanedRecommendations);
-        
-        const parsedRecommendations = JSON.parse(cleanedRecommendations) as Recommendation[];
+
+        const parsedRecommendations = JSON.parse(
+          cleanedRecommendations
+        ) as Recommendation[];
 
         // Process attractions to ensure they're always arrays and handle any data issues
         const processedRecommendations = parsedRecommendations
@@ -163,42 +181,59 @@ export function ImageTranslator() {
         setRecommendations(processedRecommendations);
       } catch (parseError) {
         console.error("Error parsing recommendations:", parseError);
-        console.error("Original recommendations string:", recommendationsItem.recommendations);
-        
+        console.error(
+          "Original recommendations string:",
+          recommendationsItem.recommendations
+        );
+
         // Try to extract any readable destination names even if JSON parsing fails
         try {
           const rawString = recommendationsItem.recommendations;
           // Look for destination patterns in the string
-          const destinationMatches = rawString.match(/Destination Name & Country['"]*:\s*['"]*([^'"]+)['"]*,/gi);
-          
+          const destinationMatches = rawString.match(
+            /Destination Name & Country['"]*:\s*['"]*([^'"]+)['"]*,/gi
+          );
+
           if (destinationMatches && destinationMatches.length > 0) {
             // Create minimal recommendations from extracted destination names
-            const fallbackRecommendations: Recommendation[] = destinationMatches.map((match) => {
-              const destinationName = match.replace(/Destination Name & Country['"]*:\s*['"]*([^'"]+)['"]*,/i, '$1');
-              return {
-                "Destination Name & Country": destinationName,
-                "Similarity Reason": "Similar destination found",
-                "Best Time to Visit": "Check local weather conditions",
-                "Must-See Attractions": ["Contact local tourism board for details"],
-                "Estimated Daily Budget": "Budget varies by season",
-                "Cultural Tips": "Research local customs before visiting"
-              };
-            });
-            
-            console.log("Using fallback recommendations:", fallbackRecommendations);
+            const fallbackRecommendations: Recommendation[] =
+              destinationMatches.map((match) => {
+                const destinationName = match.replace(
+                  /Destination Name & Country['"]*:\s*['"]*([^'"]+)['"]*,/i,
+                  "$1"
+                );
+                return {
+                  "Destination Name & Country": destinationName,
+                  "Similarity Reason": "Similar destination found",
+                  "Best Time to Visit": "Check local weather conditions",
+                  "Must-See Attractions": [
+                    "Contact local tourism board for details",
+                  ],
+                  "Estimated Daily Budget": "Budget varies by season",
+                  "Cultural Tips": "Research local customs before visiting",
+                };
+              });
+
+            console.log(
+              "Using fallback recommendations:",
+              fallbackRecommendations
+            );
             setRecommendations(fallbackRecommendations);
             return; // Exit early with fallback data
           }
         } catch (fallbackError) {
           console.error("Fallback parsing also failed:", fallbackError);
         }
-        
-        throw new Error(`Failed to parse recommendations data. The API response may be malformed. Error: ${parseError.message}`);
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        throw new Error(
+          `Failed to parse recommendations data. The API response may be malformed. Error: `
+        );
       }
     } catch (err) {
       console.error("API Error:", err);
       setError(
-        err instanceof Error && err.message.includes("parse") 
+        err instanceof Error && err.message.includes("parse")
           ? "The API returned data in an unexpected format. Please try uploading a different image or try again later."
           : "Failed to analyze image. The API might be slow or unavailable. Please try again."
       );

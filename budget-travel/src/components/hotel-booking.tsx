@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -262,6 +263,7 @@ const amenityIcons: Record<string, React.ReactElement> = {
 };
 
 export function HotelBooking({ destination }: HotelBookingProps) {
+  const router = useRouter();
   const [hotels] = useState<HotelOption[]>(getHotelsForDestination(destination.id));
   const [searchFilters, setSearchFilters] = useState({
     checkIn: "",
@@ -291,8 +293,23 @@ export function HotelBooking({ destination }: HotelBookingProps) {
   );
 
   const handleBooking = (hotel: HotelOption) => {
-    // This would typically open a booking modal or redirect to payment
-    alert(`Booking ${hotel.name} for ${searchFilters.guests} guests from ${searchFilters.checkIn} to ${searchFilters.checkOut}`);
+    const nights = searchFilters.checkIn && searchFilters.checkOut ? 
+      Math.max(1, Math.ceil((new Date(searchFilters.checkOut).getTime() - new Date(searchFilters.checkIn).getTime()) / (1000 * 60 * 60 * 24))) : 1;
+    
+    const bookingData = {
+      type: 'hotel',
+      destination: destination.name,
+      hotel: hotel,
+      checkIn: searchFilters.checkIn,
+      checkOut: searchFilters.checkOut,
+      guests: searchFilters.guests,
+      rooms: searchFilters.rooms,
+      nights: nights,
+      totalPrice: hotel.price * nights * searchFilters.rooms
+    };
+    
+    localStorage.setItem('pendingBooking', JSON.stringify(bookingData));
+    router.push('/payment');
   };
 
   return (

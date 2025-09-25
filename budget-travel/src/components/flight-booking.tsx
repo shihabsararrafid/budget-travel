@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -373,6 +374,7 @@ const amenityIcons: Record<string, React.ReactElement> = {
 };
 
 export function FlightBooking({ destination }: FlightBookingProps) {
+  const router = useRouter();
   const [flights] = useState<FlightOption[]>(getFlightsForDestination(destination.id));
   const [searchFilters, setSearchFilters] = useState<{
     departure: string;
@@ -402,7 +404,19 @@ export function FlightBooking({ destination }: FlightBookingProps) {
   );
 
   const handleBooking = (flight: FlightOption) => {
-    alert(`Booking ${flight.airline} flight ${flight.airlineCode} for ${searchFilters.passengers} passenger(s)`);
+    const bookingData = {
+      type: 'flight',
+      destination: destination.name,
+      flight: flight,
+      departure: searchFilters.departure,
+      return: searchFilters.return,
+      passengers: searchFilters.passengers,
+      class: searchFilters.class,
+      totalPrice: flight.price * searchFilters.passengers
+    };
+    
+    localStorage.setItem('pendingBooking', JSON.stringify(bookingData));
+    router.push('/payment');
   };
 
   const formatTime = (time: string) => {

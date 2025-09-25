@@ -177,12 +177,17 @@ Perfect weather for your trip! 🌞`;
     if (typeof itinerary === "string") return itinerary;
 
     let formatted = `🎒 **Travel Itinerary**\n\n`;
-    formatted += `📍 **Destination:** ${itinerary.destination}\n`;
-    formatted += `🚀 **Starting Point:** ${itinerary.starting_point}\n`;
-    formatted += `📅 **Dates:** ${itinerary.dates?.start} to ${itinerary.dates?.end}\n`;
-    formatted += `💰 **Total Budget:** $${itinerary.total_budget}\n\n`;
+    formatted += `📍 **Destination:** ${itinerary?.trip_summary?.destination || itinerary?.destination || "Unknown"}\n`;
+    formatted += `🚀 **Starting Point:** ${itinerary?.trip_summary?.origin || itinerary?.starting_point || "Unknown"}\n`;
+    formatted += `📅 **Dates:** ${itinerary?.trip_summary?.dates || `${itinerary?.dates?.start} to ${itinerary?.dates?.end}` || "Not specified"}\n`;
+    formatted += `💰 **Total Budget:** ${itinerary?.trip_summary?.total_estimated_cost || `$${itinerary?.total_budget}` || "Not specified"}\n\n`;
 
-    if (itinerary.travel_route) {
+    if (itinerary?.transportation?.outbound) {
+      formatted += `✈️ **Travel Route**\n`;
+      formatted += `- Mode: ${itinerary.transportation.outbound.type}\n`;
+      formatted += `- Duration: ${itinerary.transportation.outbound.duration}\n`;
+      formatted += `- Cost: ${itinerary.transportation.outbound.cost}\n\n`;
+    } else if (itinerary?.travel_route) {
       formatted += `✈️ **Travel Route**\n`;
       formatted += `- Mode: ${itinerary.travel_route.transportation_mode}\n`;
       formatted += `- Duration: ${itinerary.travel_route.duration}\n`;
@@ -193,24 +198,42 @@ Perfect weather for your trip! 🌞`;
     if (itinerary.daily_itinerary && Array.isArray(itinerary.daily_itinerary)) {
       formatted += `📋 **Daily Itinerary**\n\n`;
       itinerary.daily_itinerary.forEach((day: any) => {
-        formatted += `**Day ${day.day} - ${day.date}** (Cost: $${day.daily_cost})\n`;
+        const dayCost = day.daily_total || day.daily_cost || "0";
+        formatted += `**Day ${day.day} - ${day.date}** (Cost: ${dayCost})\n`;
         if (day.activities && Array.isArray(day.activities)) {
           day.activities.forEach((activity: any) => {
             formatted += `  • ${activity.time}: ${activity.activity} at ${activity.location}\n`;
-            if (activity.cost > 0) formatted += `    Cost: $${activity.cost}\n`;
+            if (activity.cost && activity.cost !== "Included" && activity.cost !== "$0") {
+              formatted += `    Cost: ${activity.cost}\n`;
+            }
             if (activity.notes) formatted += `    ${activity.notes}\n`;
           });
         }
+        
+        // Handle meals if they exist
+        if (day.meals) {
+          formatted += `  Meals:\n`;
+          Object.entries(day.meals).forEach(([mealType, meal]: [string, any]) => {
+            formatted += `    ${mealType.charAt(0).toUpperCase() + mealType.slice(1)}: ${meal.restaurant} - ${meal.cost}\n`;
+          });
+        }
+        
+        // Handle accommodation if it exists
+        if (day.accommodation) {
+          formatted += `  Accommodation: ${day.accommodation.hotel} - ${day.accommodation.cost}\n`;
+        }
+        
         formatted += `\n`;
       });
     }
 
     if (
-      itinerary.money_saving_tips &&
-      Array.isArray(itinerary.money_saving_tips)
+      (itinerary?.tips && Array.isArray(itinerary.tips)) ||
+      (itinerary?.money_saving_tips && Array.isArray(itinerary.money_saving_tips))
     ) {
       formatted += `💡 **Money Saving Tips**\n`;
-      itinerary.money_saving_tips.forEach((tip: string, index: number) => {
+      const tips = itinerary.tips || itinerary.money_saving_tips;
+      tips.forEach((tip: string, index: number) => {
         formatted += `${index + 1}. ${tip}\n`;
       });
       formatted += `\n`;
@@ -233,15 +256,33 @@ Perfect weather for your trip! 🌞`;
     if (!costs) return "No cost information available";
     if (typeof costs === "string") return costs;
 
-    let formatted = `💰 **Cost Summary for ${costs.destination}**\n\n`;
-    formatted += `**Total Budget:** $${costs.total_budget}\n\n`;
+    // Try to parse nested JSON if it exists
+    let nestedData = null;
+    if (costs.total_budget_needed) {
+      try {
+        nestedData = typeof costs.total_budget_needed === 'string' 
+          ? JSON.parse(costs.total_budget_needed) 
+          : costs.total_budget_needed;
+      } catch {
+        // If parsing fails, continue without nested data
+      }
+    }
 
-    if (costs.cost_breakdown) {
+    const destination = nestedData?.trip_summary?.destination || costs.destination || "your destination";
+    const totalBudget = nestedData?.trip_summary?.total_estimated_cost || costs.total_budget;
+    const breakdown = nestedData?.budget_breakdown || costs.cost_breakdown;
+
+    let formatted = `💰 **Cost Summary for ${destination}**\n\n`;
+    if (totalBudget) {
+      formatted += `**Total Budget:** ${totalBudget}\n\n`;
+    }
+
+    if (breakdown) {
       formatted += `📊 **Cost Breakdown:**\n`;
-      Object.entries(costs.cost_breakdown).forEach(([category, amount]) => {
+      Object.entries(breakdown).forEach(([category, amount]) => {
         formatted += `• ${
           category.charAt(0).toUpperCase() + category.slice(1)
-        }: $${amount}\n`;
+        }: ${amount}\n`;
       });
       formatted += `\n`;
     }
@@ -355,9 +396,9 @@ Perfect weather for your trip! 🌞`;
         description: `Explore and enjoy your ${
           day.day || index + 1
         }${getDayOrdinal(day.day || index + 1)} day in ${
-          itinerary.destination || "your destination"
+          itinerary?.trip_summary?.destination || itinerary?.destination || "your destination"
         }`,
-        totalCost: day.daily_cost ? `$${day.daily_cost}` : "$0",
+        totalCost: day.daily_total ? `${day.daily_total}` : "$0",
         transportation: "Local transport",
         accommodation: "Hotel/Accommodation",
         activities,
@@ -439,8 +480,20 @@ Perfect weather for your trip! 🌞`;
       return null;
     }
 
+    // Try to parse nested JSON if it exists
+    let nestedData = null;
+    if (parsedCost.total_budget_needed) {
+      try {
+        nestedData = typeof parsedCost.total_budget_needed === 'string' 
+          ? JSON.parse(parsedCost.total_budget_needed) 
+          : parsedCost.total_budget_needed;
+      } catch {
+        // If parsing fails, continue without nested data
+      }
+    }
+
     const budget = parseInt(totalBudget.replace(/\$|,/g, "")) || 0;
-    const breakdown = parsedCost.cost_breakdown || {};
+    const breakdown = nestedData?.budget_breakdown || parsedCost.cost_breakdown || {};
 
     const categories = [
       {
@@ -479,21 +532,57 @@ Perfect weather for your trip! 🌞`;
         percentage: total > 0 ? Math.round((cat.value / total) * 100) : 0,
       })),
       savings: budget - total,
-      tips: parsedCost.money_saving_tips || [],
+      tips: nestedData?.tips || parsedCost.money_saving_tips || [],
     };
   };
 
   const convertToTripCard = (apiResult: any, userInputs: any): TripPlanCard => {
-    const itinerary = apiResult.result?.Output?.itinerary;
-    const costSummary = apiResult.result?.Output?.cost_summary;
-    const weatherForecast = apiResult.result?.Output?.weather_forecast;
+    // Parse JSON strings from the new API response format
+    let itinerary, costSummary, weatherForecast;
+    
+    try {
+      itinerary = typeof apiResult.itinerary === 'string' ? JSON.parse(apiResult.itinerary) : apiResult.itinerary;
+    } catch {
+      itinerary = null;
+    }
+    
+    try {
+      costSummary = typeof apiResult.cost_summary === 'string' ? JSON.parse(apiResult.cost_summary) : apiResult.cost_summary;
+    } catch {
+      costSummary = null;
+    }
+    
+    try {
+      weatherForecast = typeof apiResult.weather_forecast === 'string' ? JSON.parse(apiResult.weather_forecast) : apiResult.weather_forecast;
+    } catch {
+      weatherForecast = null;
+    }
 
     // Extract key information from API response
-    const totalBudget = itinerary?.total_budget || userInputs.budget;
-    const destination = itinerary?.destination || userInputs.destination;
-    const startingPoint = itinerary?.starting_point || userInputs.startingPoint;
-    const costBreakdown =
-      itinerary?.cost_breakdown || costSummary?.cost_breakdown;
+    // Handle nested JSON in cost_summary.total_budget_needed
+    let nestedItinerary = null;
+    if (costSummary?.total_budget_needed) {
+      try {
+        nestedItinerary = typeof costSummary.total_budget_needed === 'string' 
+          ? JSON.parse(costSummary.total_budget_needed) 
+          : costSummary.total_budget_needed;
+      } catch {
+        // If parsing fails, keep null
+      }
+    }
+    
+    const totalBudget = itinerary?.trip_summary?.total_estimated_cost?.replace(/[\$,]/g, '').split('-')[0] || 
+                       nestedItinerary?.trip_summary?.total_estimated_cost?.replace(/[\$,]/g, '').split('-')[0] ||
+                       userInputs.budget;
+    const destination = itinerary?.trip_summary?.destination || 
+                       nestedItinerary?.trip_summary?.destination || 
+                       userInputs.destination;
+    const startingPoint = itinerary?.trip_summary?.origin || 
+                         nestedItinerary?.trip_summary?.origin || 
+                         userInputs.startingPoint;
+    const costBreakdown = itinerary?.budget_breakdown || 
+                         nestedItinerary?.budget_breakdown || 
+                         costSummary?.cost_breakdown;
 
     // Calculate duration
     const tripDuration = userInputs.duration || 7;
@@ -522,16 +611,18 @@ Perfect weather for your trip! 🌞`;
 
     // Generate highlights from itinerary
     const highlights: string[] = [];
-    if (itinerary?.travel_route?.transportation_mode) {
-      highlights.push(`${itinerary.travel_route.transportation_mode} Travel`);
+    const allItinerary = itinerary || nestedItinerary;
+    
+    if (allItinerary?.transportation?.outbound?.type) {
+      highlights.push(`${allItinerary.transportation.outbound.type} Travel`);
     }
-    if (itinerary?.money_saving_tips?.length > 0) {
+    if (allItinerary?.tips?.length > 0) {
       highlights.push("Budget Tips");
     }
     if (weatherForecast?.city?.name) {
       highlights.push("Weather Forecast");
     }
-    if (itinerary?.daily_itinerary?.length > 0) {
+    if (allItinerary?.daily_itinerary?.length > 0) {
       highlights.push("Daily Itinerary");
     }
 
@@ -561,11 +652,11 @@ Perfect weather for your trip! 🌞`;
       description: `Experience ${destination} with a carefully planned ${tripDuration}-day itinerary from ${startingPoint}. Perfect for your budget of $${totalBudget}.`,
       tags: ["AI Generated", "Personalized", "Budget-Friendly"],
       rawData: {
-        weather_forecast: formatWeatherForecast(weatherForecast),
-        itinerary: formatItinerary(itinerary),
-        cost_summary: formatCostSummary(costSummary),
+        weather_forecast: apiResult.weather_forecast || formatWeatherForecast(weatherForecast),
+        itinerary: apiResult.itinerary || formatItinerary(allItinerary),
+        cost_summary: apiResult.cost_summary || formatCostSummary(costSummary),
       },
-      timeline: parseItineraryToTimeline(itinerary),
+      timeline: parseItineraryToTimeline(allItinerary),
     };
   };
 

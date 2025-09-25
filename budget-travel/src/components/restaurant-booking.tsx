@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -363,6 +364,7 @@ const featureIcons: Record<string, React.ReactElement> = {
 };
 
 export function RestaurantBooking({ destination }: RestaurantBookingProps) {
+  const router = useRouter();
   const [restaurants] = useState<RestaurantOption[]>(getRestaurantsForDestination(destination.id));
   const [searchFilters, setSearchFilters] = useState({
     date: "",
@@ -400,7 +402,19 @@ export function RestaurantBooking({ destination }: RestaurantBookingProps) {
       alert("Please select date and time for reservation");
       return;
     }
-    alert(`${restaurant.reservationRequired ? 'Reserving' : 'Booking'} table at ${restaurant.name} for ${searchFilters.guests} guests on ${searchFilters.date} at ${searchFilters.time}`);
+    
+    const bookingData = {
+      type: 'restaurant',
+      destination: destination.name,
+      restaurant: restaurant,
+      date: searchFilters.date,
+      time: searchFilters.time,
+      guests: searchFilters.guests,
+      totalPrice: restaurant.avgPrice * searchFilters.guests
+    };
+    
+    localStorage.setItem('pendingBooking', JSON.stringify(bookingData));
+    router.push('/payment');
   };
 
   const getPriceRangeColor = (priceRange: string) => {

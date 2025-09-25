@@ -1,289 +1,159 @@
-# Budget Travel Website - Unified Activity Diagram 🌍
+# Budget Travel Website - Simplified Activity Diagram 🌍
 
-## 🎯 Complete Website Flow - Single Activity Diagram
+## 🎯 Main Website Flow - Clean & Simple
 
 ```mermaid
 %%{init: {'theme':'base', 'themeVariables': { 'primaryColor': '#6c5ce7', 'primaryTextColor': '#fff', 'primaryBorderColor': '#5f3dc4', 'lineColor': '#fd79a8', 'secondaryColor': '#00d2d3', 'tertiaryColor': '#feca57'}}}%%
 flowchart TD
-    Start([🌟 User Visits Budget Travel Website]) --> Landing[🏠 Landing Page]
+    Start([🌟 User Visits Website]) --> Landing[🏠 Landing Page]
     
-    Landing --> AuthCheck{🔐 User Authenticated?}
+    Landing --> AuthCheck{🔐 Logged In?}
     
-    %% Guest User Path
-    AuthCheck -->|❌ No| GuestFlow[👤 Guest User Experience]
-    GuestFlow --> GuestActions{🎯 Choose Action}
+    %% Guest Path
+    AuthCheck -->|❌ No| GuestFlow[👤 Guest User]
+    GuestFlow --> GuestOptions{🎯 What to do?}
     
-    GuestActions -->|💰 Budget Search| BudgetSearch[🔍 Budget Search Tool]
-    GuestActions -->|🤖 AI Chat| LimitedChat[💬 Limited AI Chat]
-    GuestActions -->|📸 Image Translate| ImageTool[📱 Image Translator]
-    GuestActions -->|🌍 Browse| BrowseDestinations[🗺️ Browse Destinations]
-    GuestActions -->|🔑 Sign In| SignIn[📝 Sign In Form]
-    GuestActions -->|🚀 Sign Up| GetStarted[🎨 Multi-Step Registration]
+    GuestOptions -->|💰 Search Destinations| BudgetSearch[🔍 Budget Search]
+    GuestOptions -->|🤖 Try AI Chat| LimitedAI[💬 Limited AI Access]
+    GuestOptions -->|🔑 Sign In| SignIn[📝 Login Form]
+    GuestOptions -->|🚀 Register| Register[📝 Sign Up Process]
     
-    %% Authentication Flows
-    SignIn --> LoginAttempt{🔍 Valid Credentials?}
-    LoginAttempt -->|❌ No| SignIn
-    LoginAttempt -->|✅ Yes| AuthSuccess[🎉 Login Success]
+    %% Authentication
+    SignIn --> LoginCheck{✅ Valid Login?}
+    LoginCheck -->|❌ No| SignIn
+    LoginCheck -->|✅ Yes| Dashboard
     
-    GetStarted --> RegStep1[🎭 Step 1: Travel Style]
-    RegStep1 --> RegStep2[💰 Step 2: Budget Range]
-    RegStep2 --> RegStep3[🌍 Step 3: Destinations]
-    RegStep3 --> RegStep4[📅 Step 4: Travel Frequency]
-    RegStep4 --> RegStep5[🎪 Step 5: Activities]
-    RegStep5 --> RegStep6[👤 Step 6: Personal Info]
-    RegStep6 --> RegStep7[🔐 Step 7: Account Creation]
-    RegStep7 --> RegComplete[✅ Registration Complete]
+    Register --> RegProcess[📋 Multi-Step Registration]
+    RegProcess --> Dashboard[📊 User Dashboard]
     
-    %% Authenticated User Flow
-    AuthCheck -->|✅ Yes| AuthFlow[🎯 Authenticated User]
-    AuthSuccess --> AuthFlow
-    RegComplete --> AuthFlow
+    %% Authenticated User Path  
+    AuthCheck -->|✅ Yes| Dashboard
     
-    AuthFlow --> Dashboard[📊 User Dashboard]
-    Dashboard --> MainActions{🎯 Main Actions}
+    Dashboard --> MainMenu{🎯 Main Actions}
     
-    %% Cost Sheet Management
-    MainActions -->|💳 Cost Sheets| CostSheetDash[📋 Cost Sheets Dashboard]
-    CostSheetDash --> CostActions{📊 Cost Sheet Actions}
+    %% Cost Management
+    MainMenu -->|💳 Manage Expenses| CostSheets[📋 Cost Sheets]
+    CostSheets --> CostAction{📊 Cost Actions}
+    CostAction -->|➕ New Sheet| CreateSheet[📝 Create Cost Sheet]
+    CostAction -->|👁️ View Sheet| ViewSheet[📄 View Expenses]
     
-    CostActions -->|➕ Create New| NewCostSheet[📝 Create Cost Sheet Form]
-    CostActions -->|👁️ View Existing| ViewCostSheet[📄 View Cost Sheet Details]
-    CostActions -->|📊 Filter| FilterCosts[🔍 Filter by Status]
+    CreateSheet --> ViewSheet
+    ViewSheet --> AddExpense[💸 Add/Edit Expenses]
+    AddExpense --> ViewSheet
     
-    NewCostSheet --> CostForm[🌍 Trip Details Form]
-    CostForm --> SetBudget[💰 Set Currency & Budget]
-    SetBudget --> SaveCostSheet[💾 Save Cost Sheet]
-    SaveCostSheet --> ViewCostSheet
+    %% Trip Planning & Booking
+    MainMenu -->|🗺️ Plan Trip| TripPlanning[🧭 Trip Planning]
+    TripPlanning --> SearchDest[🌍 Search Destinations]
+    SearchDest --> DestinationPage[🏛️ Destination Details]
     
-    ViewCostSheet --> ExpenseActions{💳 Expense Actions}
-    ExpenseActions -->|➕ Add| AddExpense[💸 Add New Expense]
-    ExpenseActions -->|✏️ Edit| EditExpense[📝 Edit Expense]
-    ExpenseActions -->|🗑️ Delete| DeleteExpense[❌ Delete Expense]
-    ExpenseActions -->|📤 Export| ExportData[📊 Export Cost Data]
-    ExpenseActions -->|🤝 Share| ShareSheet[📱 Share Cost Sheet]
+    DestinationPage --> BookingType{🎯 Book What?}
+    BookingType -->|🏨 Hotels| BookHotel[🏩 Hotel Booking]
+    BookingType -->|✈️ Flights| BookFlight[✈️ Flight Booking]  
+    BookingType -->|🍽️ Dining| BookRestaurant[🍴 Restaurant Booking]
+    BookingType -->|👥 Tours| BookGuide[🎭 Tour Guide Booking]
     
-    AddExpense --> ExpenseForm[📝 Expense Entry Form]
-    ExpenseForm --> ExpenseCategory[🏷️ Select Category]
-    ExpenseCategory --> ExpenseAmount[💰 Enter Amount & Date]
-    ExpenseAmount --> ExpenseDesc[📄 Description & Receipt]
-    ExpenseDesc --> SaveExpense[💾 Save Expense]
-    SaveExpense --> UpdateTotals[🔄 Update Totals]
-    UpdateTotals --> ViewCostSheet
+    %% Unified Booking Flow
+    BookHotel --> BookingFlow[⚙️ Configure Booking]
+    BookFlight --> BookingFlow
+    BookRestaurant --> BookingFlow
+    BookGuide --> BookingFlow
     
-    %% Trip Planning Flow
-    MainActions -->|🗺️ Trip Planning| TripPlanning[🧭 Trip Planning Hub]
-    TripPlanning --> PlanActions{🎯 Planning Actions}
+    BookingFlow --> Payment[💳 Payment]
+    Payment --> PaymentCheck{💰 Payment OK?}
+    PaymentCheck -->|❌ Failed| Payment
+    PaymentCheck -->|✅ Success| Confirmation[🎉 Booking Confirmed]
     
-    PlanActions -->|🔍 Search Destinations| DestSearch[🌍 Destination Search]
-    PlanActions -->|💰 Budget Search| BudgetSearch
-    PlanActions -->|🤖 AI Assistant| FullChat[🤖 Full AI Chat Access]
+    %% AI Tools
+    MainMenu -->|🤖 AI Tools| AITools[🧠 AI Assistant]
+    AITools --> AIOptions{🤖 AI Actions}
+    AIOptions -->|💬 Chat| ChatBot[🤖 Travel Chat]
+    AIOptions -->|📸 Image| ImageTranslator[📱 Image Analysis]
+    AIOptions -->|💰 Estimate| BudgetEstimator[📊 Budget Calculator]
     
-    %% Destination & Booking Flow
-    DestSearch --> DestinationPage[🏛️ Destination Details]
-    BudgetSearch --> SearchResults[📋 Search Results]
-    SearchResults --> DestinationPage
+    ChatBot --> AIResponse[💬 Get AI Suggestions]
+    AIResponse --> BookingType
     
-    DestinationPage --> BookingTabs{🎯 Booking Options}
-    BookingTabs -->|🏨 Hotels| HotelBooking[🏩 Hotel Search & Booking]
-    BookingTabs -->|✈️ Flights| FlightBooking[🛫 Flight Search & Booking]
-    BookingTabs -->|🍽️ Restaurants| RestaurantBooking[🍴 Restaurant Reservations]
-    BookingTabs -->|👥 Tour Guides| GuideBooking[🎭 Tour Guide Booking]
+    ImageTranslator --> ImageResults[🌍 Similar Destinations]
+    ImageResults --> DestinationPage
     
-    %% Hotel Booking Sub-flow
-    HotelBooking --> HotelFilters[🔍 Apply Hotel Filters]
-    HotelFilters --> HotelResults[🏨 Hotel Results]
-    HotelResults --> SelectHotel[✅ Select Hotel]
+    %% Settings & Profile
+    Dashboard --> UserMenu{👤 User Options}
+    UserMenu -->|👤 Profile| Profile[👤 Edit Profile]
+    UserMenu -->|⚙️ Settings| Settings[⚙️ App Settings]
+    UserMenu -->|🚪 Logout| Logout[🚪 Sign Out]
     
-    %% Flight Booking Sub-flow
-    FlightBooking --> FlightFilters[🔍 Apply Flight Filters]
-    FlightFilters --> FlightResults[✈️ Flight Results]
-    FlightResults --> SelectFlight[✅ Select Flight]
+    Profile --> Dashboard
+    Settings --> Dashboard
+    Logout --> Landing
     
-    %% Restaurant Booking Sub-flow
-    RestaurantBooking --> RestFilters[🔍 Restaurant Filters]
-    RestFilters --> RestResults[🍽️ Restaurant Results]
-    RestResults --> SelectRestaurant[✅ Select Restaurant]
+    %% Guest Upgrade Path
+    BudgetSearch --> SignUpPrompt[🔔 Sign Up to Save]
+    LimitedAI --> SignUpPrompt
+    SignUpPrompt --> Register
     
-    %% Guide Booking Sub-flow
-    GuideBooking --> GuideFilters[🔍 Guide Filters]
-    GuideFilters --> GuideResults[👥 Guide Results]
-    GuideResults --> SelectGuide[✅ Select Guide]
+    %% End Points
+    Confirmation --> BookingComplete([🎉 Trip Booked!])
+    AddExpense --> ExpensesSaved([📊 Expenses Tracked!])
+    AIResponse --> InfoReceived([🤖 Got Travel Info!])
     
-    %% Unified Booking Configuration
-    SelectHotel --> BookingConfig[⚙️ Booking Configuration]
-    SelectFlight --> BookingConfig
-    SelectRestaurant --> BookingConfig
-    SelectGuide --> BookingConfig
-    
-    BookingConfig --> SetDatesGuests[📅 Set Dates & Guests]
-    SetDatesGuests --> AddPreferences[⭐ Add Preferences & Add-ons]
-    AddPreferences --> ReviewBooking[👁️ Review Booking Details]
-    ReviewBooking --> PaymentPage[💳 Payment Page]
-    
-    %% Payment Processing
-    PaymentPage --> PaymentMethod{💸 Payment Method}
-    PaymentMethod -->|💳 Credit Card| CardPayment[🏦 Card Details]
-    PaymentMethod -->|💰 PayPal| PayPalLogin[🟦 PayPal Login]
-    PaymentMethod -->|🏛️ Bank Transfer| BankTransfer[🏦 Bank Details]
-    
-    CardPayment --> ProcessPayment[⚡ Process Payment]
-    PayPalLogin --> ProcessPayment
-    BankTransfer --> ProcessPayment
-    
-    ProcessPayment --> PaymentResult{💳 Payment Success?}
-    PaymentResult -->|❌ Failed| PaymentError[⚠️ Payment Error]
-    PaymentError --> PaymentPage
-    
-    PaymentResult -->|✅ Success| PaymentSuccess[🎉 Payment Successful]
-    PaymentSuccess --> Confirmation[📧 Booking Confirmation]
-    Confirmation --> EmailSent[📧 Email Confirmation]
-    Confirmation --> AddToCalendar[📅 Add to Calendar]
-    Confirmation --> AddToCostSheet[📊 Add to Cost Sheet]
-    
-    %% AI Tools Flow
-    MainActions -->|🤖 AI Tools| AIHub[🧠 AI Tools Hub]
-    FullChat --> AIHub
-    LimitedChat --> SignUpPrompt[🔔 Sign Up Prompt]
-    SignUpPrompt --> GetStarted
-    
-    AIHub --> AIActions{🤖 AI Actions}
-    AIActions -->|💬 Chat Assistant| ChatBot[🤖 Travel Chat Assistant]
-    AIActions -->|📸 Image Analysis| ImageTool
-    AIActions -->|💰 Budget Estimation| ExpenseEstimator[📊 Expense Estimator]
-    
-    ChatBot --> ChatQuery[💭 Enter Travel Query]
-    ChatQuery --> AIProcessing[🧠 AI Processing]
-    AIProcessing --> AIResponse[💬 AI Response]
-    AIResponse --> ActionButtons{🎯 Follow-up Actions?}
-    
-    ActionButtons -->|📖 Book This| StartBooking[🚀 Start Booking Flow]
-    ActionButtons -->|💾 Save to List| SaveToFavorites[⭐ Save to Favorites]
-    ActionButtons -->|📊 Add to Sheet| QuickAddCost[📈 Quick Add to Cost Sheet]
-    ActionButtons -->|🤝 Share| ShareInfo[📱 Share Information]
-    ActionButtons -->|💬 Continue Chat| ChatBot
-    
-    StartBooking --> BookingTabs
-    
-    ImageTool --> UploadImage[📸 Upload Travel Image]
-    UploadImage --> ImageAnalysis[🔍 AI Image Analysis]
-    ImageAnalysis --> ImageResults[🌍 Similar Destinations]
-    ImageResults --> ImageActions{🎯 Image Actions}
-    ImageActions -->|🌍 Explore Destination| DestinationPage
-    ImageActions -->|💾 Save Recommendations| SaveToFavorites
-    ImageActions -->|📸 Upload Another| ImageTool
-    
-    %% Navigation & Settings
-    Dashboard --> UserActions{👤 User Actions}
-    UserActions -->|👤 Profile| UserProfile[👤 User Profile Settings]
-    UserActions -->|⚙️ Settings| AppSettings[⚙️ App Settings]
-    UserActions -->|🚪 Logout| LogoutProcess[🚪 Logout]
-    
-    UserProfile --> EditProfile[✏️ Edit Profile Info]
-    EditProfile --> SaveProfile[💾 Save Profile Changes]
-    SaveProfile --> Dashboard
-    
-    AppSettings --> SettingsOptions{⚙️ Settings Options}
-    SettingsOptions -->|🔔 Notifications| NotificationSettings[🔔 Notification Settings]
-    SettingsOptions -->|🌍 Language| LanguageSettings[🌍 Language Settings]
-    SettingsOptions -->|🌙 Theme| ThemeSettings[🎨 Theme Settings]
-    SettingsOptions -->|🔐 Privacy| PrivacySettings[🛡️ Privacy Settings]
-    
-    NotificationSettings --> Dashboard
-    LanguageSettings --> Dashboard
-    ThemeSettings --> Dashboard
-    PrivacySettings --> Dashboard
-    
-    LogoutProcess --> Landing
-    
-    %% Guest Interactions leading to sign up
-    BudgetSearch --> GuestResults[📊 Budget Search Results]
-    GuestResults --> GuestSignUp[🔔 Sign Up to Save Results]
-    GuestSignUp --> GetStarted
-    
-    BrowseDestinations --> GuestBrowse[👁️ View Sample Destinations]
-    GuestBrowse --> GuestSignUp
-    
-    %% End states
-    EmailSent --> End1([🎉 Booking Complete])
-    AddToCalendar --> End1
-    AddToCostSheet --> End1
-    ExportData --> End2([📊 Data Exported])
-    ShareSheet --> End3([🤝 Content Shared])
-    ShareInfo --> End3
-    SaveToFavorites --> End4([⭐ Saved to Favorites])
-    
-    %% Styling for different sections
+    %% Styling
     style Start fill:#6c5ce7,stroke:#5f3dc4,stroke-width:4px,color:#fff
     style Landing fill:#fd79a8,stroke:#e84393,stroke-width:3px,color:#fff
     style Dashboard fill:#00d2d3,stroke:#00b894,stroke-width:4px,color:#fff
-    style PaymentPage fill:#ff6b6b,stroke:#ff4757,stroke-width:4px,color:#fff
-    style PaymentSuccess fill:#00cec9,stroke:#00b894,stroke-width:4px,color:#fff
-    style End1 fill:#2ed573,stroke:#1dd1a1,stroke-width:4px,color:#fff
-    style End2 fill:#2ed573,stroke:#1dd1a1,stroke-width:4px,color:#fff
-    style End3 fill:#2ed573,stroke:#1dd1a1,stroke-width:4px,color:#fff
-    style End4 fill:#2ed573,stroke:#1dd1a1,stroke-width:4px,color:#fff
+    style Payment fill:#ff6b6b,stroke:#ff4757,stroke-width:4px,color:#fff
+    style Confirmation fill:#00cec9,stroke:#00b894,stroke-width:4px,color:#fff
     
-    %% Decision points styling
     style AuthCheck fill:#feca57,stroke:#ff9f43,stroke-width:4px,color:#2d3436
-    style LoginAttempt fill:#feca57,stroke:#ff9f43,stroke-width:3px,color:#2d3436
-    style PaymentResult fill:#feca57,stroke:#ff9f43,stroke-width:4px,color:#2d3436
-    style GuestActions fill:#feca57,stroke:#ff9f43,stroke-width:3px,color:#2d3436
-    style MainActions fill:#feca57,stroke:#ff9f43,stroke-width:3px,color:#2d3436
-    style BookingTabs fill:#feca57,stroke:#ff9f43,stroke-width:3px,color:#2d3436
-    style PaymentMethod fill:#feca57,stroke:#ff9f43,stroke-width:3px,color:#2d3436
+    style LoginCheck fill:#feca57,stroke:#ff9f43,stroke-width:3px,color:#2d3436
+    style PaymentCheck fill:#feca57,stroke:#ff9f43,stroke-width:4px,color:#2d3436
+    style GuestOptions fill:#feca57,stroke:#ff9f43,stroke-width:3px,color:#2d3436
+    style MainMenu fill:#feca57,stroke:#ff9f43,stroke-width:3px,color:#2d3436
+    style BookingType fill:#feca57,stroke:#ff9f43,stroke-width:3px,color:#2d3436
     
-    %% Key process styling
-    style CostSheetDash fill:#a55eea,stroke:#8854d0,stroke-width:3px,color:#fff
-    style ViewCostSheet fill:#a55eea,stroke:#8854d0,stroke-width:3px,color:#fff
+    style CostSheets fill:#a55eea,stroke:#8854d0,stroke-width:3px,color:#fff
     style TripPlanning fill:#74b9ff,stroke:#0984e3,stroke-width:3px,color:#fff
-    style DestinationPage fill:#74b9ff,stroke:#0984e3,stroke-width:3px,color:#fff
-    style AIHub fill:#ff9ff3,stroke:#f368e0,stroke-width:3px,color:#fff
-    style ChatBot fill:#ff9ff3,stroke:#f368e0,stroke-width:3px,color:#fff
+    style AITools fill:#ff9ff3,stroke:#f368e0,stroke-width:3px,color:#fff
     
-    %% Registration flow styling
-    style GetStarted fill:#fdcb6e,stroke:#f39c12,stroke-width:3px,color:#2d3436
-    style RegStep1 fill:#fdcb6e,stroke:#e17055,stroke-width:2px,color:#fff
-    style RegStep2 fill:#fdcb6e,stroke:#e17055,stroke-width:2px,color:#fff
-    style RegStep3 fill:#fdcb6e,stroke:#e17055,stroke-width:2px,color:#fff
-    style RegStep4 fill:#fdcb6e,stroke:#e17055,stroke-width:2px,color:#fff
-    style RegStep5 fill:#fdcb6e,stroke:#e17055,stroke-width:2px,color:#fff
-    style RegStep6 fill:#fdcb6e,stroke:#e17055,stroke-width:2px,color:#fff
-    style RegStep7 fill:#fdcb6e,stroke:#e17055,stroke-width:2px,color:#fff
-    style RegComplete fill:#00cec9,stroke:#00b894,stroke-width:3px,color:#fff
+    style BookingComplete fill:#2ed573,stroke:#1dd1a1,stroke-width:4px,color:#fff
+    style ExpensesSaved fill:#2ed573,stroke:#1dd1a1,stroke-width:4px,color:#fff
+    style InfoReceived fill:#2ed573,stroke:#1dd1a1,stroke-width:4px,color:#fff
 ```
 
-## 📋 Activity Diagram Legend
+## 📋 Simplified Flow Overview
 
-### 🎯 **Flow Sections:**
+### 🎯 **Main User Paths:**
 
-| Color | Section | Description |
-|-------|---------|-------------|
-| 🟣 **Purple** | Core Navigation | Landing, Dashboard, Main Entry Points |
-| 🔴 **Red/Pink** | Authentication | Sign In, Registration, Payment |
-| 🔵 **Blue** | Trip Planning | Destination Search, Booking, Travel Tools |
-| 💜 **Violet** | Cost Management | Cost Sheets, Expenses, Budget Tracking |
-| 🟡 **Yellow** | Decision Points | All user choice moments and conditionals |
-| 🟢 **Green** | Success States | Completed actions, confirmations |
-| 🟠 **Orange** | Registration | Multi-step signup process |
+| 👤 **User Type** | 🛤️ **Primary Path** | 🎯 **Goal** |
+|------------------|---------------------|-------------|
+| 🆕 **New Visitor** | Landing → Guest Options → Sign Up | Create Account |
+| 🔙 **Returning User** | Landing → Login → Dashboard | Access Features |
+| 👤 **Guest User** | Landing → Limited Features → Upgrade Prompt | Try Before Buying |
+| ✅ **Authenticated** | Dashboard → Main Features → Complete Tasks | Full Experience |
 
-### 📊 **Key Features Covered:**
+### 🔧 **Core Features:**
 
-✅ **Complete User Journey** - From landing to booking completion  
-✅ **Authentication Flow** - Guest vs. authenticated user paths  
-✅ **Multi-step Registration** - 7-step onboarding process  
-✅ **Cost Sheet Management** - Create, view, edit, export expenses  
-✅ **Trip Planning** - Search, browse, plan itineraries  
-✅ **Booking System** - Hotels, flights, restaurants, guides  
-✅ **Payment Processing** - Multiple payment methods and confirmation  
-✅ **AI Tools Integration** - Chat, image analysis, budget estimation  
-✅ **User Settings** - Profile, preferences, notifications  
-✅ **Guest Experience** - Limited access with upgrade prompts  
+✅ **Simple Authentication** - Login/Register with validation  
+✅ **Cost Management** - Create and track trip expenses  
+✅ **Trip Planning** - Search destinations and view details  
+✅ **Booking System** - Hotels, flights, dining, tours  
+✅ **Payment Flow** - Secure payment with confirmation  
+✅ **AI Assistant** - Chat, image analysis, budget tools  
+✅ **User Profile** - Settings and preferences  
 
-### 🎨 **Usage Instructions:**
+### 🎨 **Color Legend:**
 
-1. **View in Mermaid Live Editor**: Copy the entire diagram code to [https://mermaid.live](https://mermaid.live)
-2. **GitHub Rendering**: The diagram will render automatically in GitHub markdown
-3. **Export Options**: Save as PNG, SVG, or PDF for presentations
-4. **Interactive Exploration**: Click nodes to understand user flow paths
+- 🟣 **Purple** - Start/Core pages (Landing, Dashboard)
+- 🟡 **Yellow** - Decision points (Login check, Payment success)  
+- 🔴 **Red** - Payment processing
+- 🔵 **Blue** - Trip planning features
+- 💜 **Violet** - Cost management  
+- 🟢 **Green** - Success/completion states
+- 🩷 **Pink** - AI tools and chat
 
-This unified activity diagram provides a complete overview of how your Budget Travel website operates, showing all major user paths, decision points, and feature integrations in a single, comprehensive visualization! 🚀
+### 🚀 **Usage:**
+
+1. **View Online**: Copy code to [Mermaid Live Editor](https://mermaid.live)
+2. **GitHub**: Renders automatically in markdown
+3. **Export**: PNG/SVG for presentations
+
+This simplified diagram shows the essential user flows without overwhelming complexity - perfect for understanding the core website functionality at a glance! ✨
